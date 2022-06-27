@@ -7,7 +7,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/openweb3/web3go"
 	"github.com/openweb3/web3go/signers"
 )
@@ -15,23 +14,9 @@ import (
 func main() {
 	mnemonic := "crisp shove million stem shiver side hospital split play lottery join vintage"
 	sm := signers.MustNewSignerManagerByMnemonic(mnemonic, 10, nil)
-	client, err := web3go.NewClientWithOption("http://localhost:7545", *new(web3go.ClientOption).WithLooger(os.Stdout).WithSignerManager(sm))
-	if err != nil {
-		panic(err)
-	}
+	client := web3go.MustNewClientWithOption("http://localhost:7545", *new(web3go.ClientOption).WithLooger(os.Stdout).WithSignerManager(sm))
 
-	chainId, err := client.Eth.ChainId()
-	if err != nil {
-		panic(err)
-	}
-
-	signFunc := func(addr common.Address, t *types.Transaction) (*types.Transaction, error) {
-		s, err := sm.Get(addr)
-		if err != nil {
-			return nil, err
-		}
-		return s.SignTransaction(t, new(big.Int).SetUint64(*chainId))
-	}
+	clientForContract, signFunc := client.ToClientForContract()
 
 	opt := &bind.TransactOpts{
 		From:   sm.List()[0].Address(),
@@ -39,7 +24,7 @@ func main() {
 	}
 
 	// Deploy
-	addr, tx, token, err := DeployMyERC20Token(opt, client.ToClientForContract(), big.NewInt(1000), "abc", 18, "ABC")
+	addr, tx, token, err := DeployMyERC20Token(opt, clientForContract, big.NewInt(1000), "abc", 18, "ABC")
 	if err != nil {
 		panic(err)
 	}
