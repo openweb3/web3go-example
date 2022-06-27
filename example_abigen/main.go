@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"math/big"
 	"os"
@@ -27,12 +26,11 @@ func main() {
 	}
 
 	signFunc := func(addr common.Address, t *types.Transaction) (*types.Transaction, error) {
-		for _, s := range sm.List() {
-			if s.Address() == addr {
-				return s.SignTransaction(t, new(big.Int).SetUint64(*chainId))
-			}
+		s, err := sm.Get(addr)
+		if err != nil {
+			return nil, err
 		}
-		return nil, errors.New("not found signer")
+		return s.SignTransaction(t, new(big.Int).SetUint64(*chainId))
 	}
 
 	opt := &bind.TransactOpts{
