@@ -26,9 +26,9 @@ func main() {
 		panic(err)
 	}
 
-	signFunc := func(a common.Address, t *types.Transaction) (*types.Transaction, error) {
+	signFunc := func(addr common.Address, t *types.Transaction) (*types.Transaction, error) {
 		for _, s := range sm.List() {
-			if s.Address() == a {
+			if s.Address() == addr {
 				return s.SignTransaction(t, new(big.Int).SetUint64(*chainId))
 			}
 		}
